@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://storemyanswers.netlify.app/sitemap.xml

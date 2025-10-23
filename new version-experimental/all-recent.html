@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>All Recent Tests</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <header class="main-header">
+    <div class="header-container">
+      <div class="logo">
+        <i class="fas fa-graduation-cap"></i>
+        <span>ExamPro</span>
+      </div>
+      <nav class="main-nav">
+        <a href="index.html" class="nav-link">
+          <i class="fas fa-home"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="#" class="nav-link active">
+          <i class="fas fa-history"></i>
+          <span>Recent Tests</span>
+        </a>
+        <a href="changelog.html" class="nav-link">
+          <i class="fas fa-list"></i>
+          <span>Changelog</span>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="container">
+      <div class="section-header">
+        <h2>All Recent Tests</h2>
+        <div class="header-actions">
+          <button class="btn-secondary" id="back-btn">Back to Home</button>
+          <button class="btn-danger" id="clear-all-btn">Clear All</button>
+        </div>
+      </div>
+      
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>Test Name</th>
+              <th>Section 1</th>
+              <th>Section 2</th>
+              <th>Time Spent</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="all-recent-list"></tbody>
+        </table>
+        <p id="no-recent-all" class="empty-state">No recent tests attempted.</p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Modal -->
+  <div id="testModal" class="modal hidden">
+    <div class="modal-content large-modal">
+      <div class="modal-header">
+        <h2>Test Details</h2>
+        <div class="modal-actions">
+          <button class="btn-primary" id="export-pdf">Export as PDF</button>
+          <button class="modal-close" id="modalClose">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      
+      <div class="modal-body">
+        <div class="test-details-header">
+          <div id="modalTestName" class="test-name-large">Test Name</div>
+          <div class="test-meta-info">
+            <span id="modalTime">Time Spent: 00:00:00</span>
+            <span id="modalDate">Date: --/--/----</span>
+          </div>
+        </div>
+
+        <div class="subjects-container" id="modalSubjects"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const { jsPDF } = window.jspdf;
+    const modal = document.getElementById('testModal');
+    const modalClose = document.getElementById('modalClose');
+    const exportBtn = document.getElementById('export-pdf');
+    const allRecentList = document.getElementById('all-recent-list');
+    const subjectsContainer = document.getElementById('modalSubjects');
+    const modalTestName = document.getElementById('modalTestName');
+    const modalTime = document.getElementById('modalTime');
+    const modalDate = document.getElementById('modalDate');
+    let currentTest = null;
+
+    // Load recent tests
+    let recentTests = JSON.parse(localStorage.getItem('recentTests') || '[]');
+
+    function updateRecentTable() {
+      allRecentList.innerHTML = '';
+      const msg = document.getElementById('no-recent-all');
+      
+      if(recentTests.length === 0){
+        msg.style.display = 'block'; 
+        return;
+      } else {
+        msg.style.display = 'none';
+      }
+
+      recentTests.forEach((test, index) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${test.name || 'Unnamed Test'}</td>
+          <td>${test.section1Count || 0}</td>
+          <td>${test.section2Count || 0}</td>
+          <td>${formatTime(test.estimatedSeconds || 0)}</td>
+          <td>${test.date || 'Unknown Date'}</td>
+        `;
+        tr.addEventListener('click', () => showModal(test));
+        allRecentList.appendChild(tr);
+      });
+    }
+
+    function formatTime(sec){
+      const h = String(Math.floor(sec/3600)).padStart(2,'0');
+      const m = String(Math.floor((sec%3600)/60)).padStart(2,'0');
+      const s = String(sec%60).padStart(2,'0');
+      return `${h}:${m}:${s}`;
+    }
+
+    function showModal(test){
+      currentTest = test;
+      modalTestName.textContent = test.name || 'Unnamed Test';
+      modalTime.textContent = `Time Spent: ${formatTime(test.estimatedSeconds || 0)}`;
+      modalDate.textContent = `Date: ${test.date || 'Unknown Date'}`;
+      subjectsContainer.innerHTML = '';
+
+      ['physics','chemistry','mathematics'].forEach(sub => {
+        const subDiv = document.createElement('div');
+        subDiv.className = 'subject-modal';
+        
+        let sectionsHTML = '';
+        
+        ['Section1', 'Section2'].forEach(sec => {
+          const key = `${sub}${sec}Answers`;
+          const questions = test[key] || [];
+          
+          sectionsHTML += `
+            <div class="section-modal">
+              <div class="section-title">${sec}</div>
+              <div class="questions-modal">
+                ${questions.map((q, i) => `<div class="question-modal">Q${i+1}: ${q || '-'}</div>`).join('')}
+              </div>
+            </div>
+          `;
+        });
+        
+        subDiv.innerHTML = `
+          <div class="subject-name">${sub.toUpperCase()}</div>
+          <div class="sections-modal">${sectionsHTML}</div>
+        `;
+        subjectsContainer.appendChild(subDiv);
+      });
+      
+      modal.classList.remove('hidden');
+    }
+
+    // Event Listeners
+    modalClose.addEventListener('click', () => modal.classList.add('hidden'));
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.add('hidden');
+      }
+    });
+
+    exportBtn.addEventListener('click', () => {
+      if(!currentTest) return;
+
+      const doc = new jsPDF({ orientation:'p', unit:'mm', format:'a4' });
+      let y = 20; 
+      const margin = 15;
+      const pageHeight = doc.internal.pageSize.height;
+      const startX = 15;
+      const maxWidth = 180;
+      const boxHeight = 8;
+
+      const subjectNameMargin = 8;   
+      const sectionTitleMargin = 10; 
+
+      // Header
+      doc.setFontSize(18); 
+      doc.text(currentTest.name, 105, y, {align:'center'});
+      y += 8; 
+      doc.setFontSize(12); 
+      doc.text(`Time Spent: ${formatTime(currentTest.estimatedSeconds)}`, 105, y, {align:'center'});
+      y += 6; 
+      doc.text(`Date Attempted: ${currentTest.date}`, 105, y, {align:'center'});
+      y += 10;
+
+      // Subjects loop
+      ['Physics','Chemistry','Mathematics'].forEach(sub => {
+        if(y + 20 > pageHeight - margin){ doc.addPage(); y = margin; }
+
+        doc.setFontSize(14);
+        doc.text(sub, startX, y);
+        y += subjectNameMargin;
+
+        ['Section1','Section2'].forEach(sec => {
+          if(y + 15 > pageHeight - margin){ doc.addPage(); y = margin; }
+
+          doc.setFontSize(12);
+          doc.text(sec, startX + 5, y);
+          y += sectionTitleMargin;
+
+          const key = `${sub.toLowerCase()}${sec}Answers`;
+          const questions = currentTest[key] || [];
+
+          let x = startX + 10;
+          const rowGap = 3;
+          const colGap = 3;
+          const boxWidth = 25;
+
+          questions.forEach((q, i) => {
+            if(x + boxWidth > startX + maxWidth){ 
+              x = startX + 10; 
+              y += boxHeight + rowGap; 
+            }
+            if(y + boxHeight > pageHeight - margin){ 
+              doc.addPage(); 
+              y = margin + 5; 
+            }
+
+            doc.setDrawColor(180);
+            doc.rect(x, y - 6, boxWidth, boxHeight);
+            doc.setFontSize(10);
+            doc.text(`Q${i+1}: ${q || '-'}`, x + 2, y - 1);
+            x += boxWidth + colGap;
+          });
+
+          y += boxHeight + rowGap + 3;
+        });
+
+        y += 6;
+      });
+
+      doc.setFontSize(10);
+      doc.text(`Generated on ${new Date().toLocaleString()}`, 105, 290, {align:'center'});
+
+      const fileName = `${currentTest.name.replace(/\s+/g,'_')}_${currentTest.date.replace(/\//g,'-')}.pdf`;
+      doc.save(fileName);
+    });
+
+    document.getElementById('clear-all-btn').addEventListener('click', () => {
+      if(confirm("Clear all recent tests?")){
+        localStorage.removeItem('recentTests');
+        recentTests = [];
+        updateRecentTable();
+      }
+    });
+
+    document.getElementById('back-btn').addEventListener('click', () => window.location.href = 'index.html');
+
+    // Initialize
+    updateRecentTable();
+  </script>
+
+  <style>
+    .container {
+      background: var(--bg-card);
+      border-radius: var(--border-radius);
+      padding: 2rem;
+      box-shadow: var(--shadow-md);
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+    }
+
+    th, td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      text-align: left;
+    }
+
+    th {
+      background: var(--bg-secondary);
+      color: var(--primary-color);
+      font-weight: 600;
+    }
+
+    tr:hover {
+      background: var(--bg-secondary);
+      cursor: pointer;
+    }
+
+    .large-modal {
+      max-width: 900px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .test-details-header {
+      text-align: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .test-name-large {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: 0.5rem;
+    }
+
+    .test-meta-info {
+      display: flex;
+      gap: 2rem;
+      justify-content: center;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .subjects-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+    }
+
+    .subject-modal {
+      background: var(--bg-secondary);
+      border-radius: var(--border-radius);
+      padding: 1.5rem;
+    }
+
+    .subject-name {
+      text-align: center;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: 1rem;
+      font-size: 1.1rem;
+    }
+
+    .sections-modal {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .section-modal {
+      background: var(--bg-primary);
+      border-radius: var(--border-radius);
+      padding: 1rem;
+    }
+
+    .section-title {
+      font-weight: 600;
+      margin-bottom: 1rem;
+      text-align: center;
+      color: var(--secondary-color);
+    }
+
+    .questions-modal {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 0.5rem;
+    }
+
+    .question-modal {
+      padding: 0.5rem;
+      background: var(--bg-secondary);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      text-align: center;
+    }
+
+    @media (max-width: 768px) {
+      .test-meta-info {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      
+      .subjects-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</body>
+</html>

@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GikoCBT - CBT System</title>
+  <meta name="description" content="Professional Computer-Based Test platform for managing and taking tests.">
+  <meta name="keywords" content="CBT, exam platform, online testing, test management">
+  <meta name="author" content="rmb190">
+  <meta name="robots" content="index, follow">
+  <meta http-equiv="Content-Language" content="en">
+  
+  <link rel="stylesheet" href="style.css">
+  <!-- Standard favicon -->
+  <link rel="icon" type="image/x-icon" href="/icon/favicon-96x96.png">
+
+  <!-- SVG version for modern browsers -->
+  <link rel="icon" type="image/svg+xml" href="/icon/favicon.svg">
+
+  <!-- Apple Touch Icon -->
+  <link rel="apple-touch-icon" href="/icon/apple-touch-icon.png">
+
+  <!-- For Android/Chrome -->
+  <link rel="manifest" href="/icon/site.webmanifest">
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <meta property="og:title" content="GikoCBT - CBT System">
+  <meta property="og:description" content="Professional Computer-Based Test platform">
+  <meta property="og:url" content="https://storemyanswers.netlify.app/">
+  <meta property="og:type" content="website">
+  
+  <meta name="google-site-verification" content="VO9bSJIxGbQntKMdLbHtjqAAI1dj3JqqSXdofm57zeg" />
+</head>
+<body>
+  
+  <!-- Header with Navigation -->
+  <header class="main-header">
+    <div class="header-container">
+      <div class="logo">
+        <i class="fas fa-graduation-cap"></i>
+        <span>GikoCBT</span>
+      </div>
+      
+      <!-- Default Navigation (shown on dashboard) -->
+      <nav class="main-nav default-nav">
+        <a href="#" class="nav-link active" data-tab="dashboard">
+          <i class="fas fa-home"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="all-recent.html" class="nav-link">
+          <i class="fas fa-history"></i>
+          <span>Recent Tests</span>
+        </a>
+        <a href="changelog.html" class="nav-link">
+          <i class="fas fa-list"></i>
+          <span>Changelog</span>
+        </a>
+      </nav>
+      
+      <!-- Test Navigation (shown during tests - replaces default nav) -->
+      <nav class="main-nav test-nav hidden">
+        <a href="#" class="nav-link active" data-subject="physics">
+          <i class="fas fa-atom"></i>
+          <span>Physics</span>
+        </a>
+        <a href="#" class="nav-link" data-subject="chemistry">
+          <i class="fas fa-flask"></i>
+          <span>Chemistry</span>
+        </a>
+        <a href="#" class="nav-link" data-subject="mathematics">
+          <i class="fas fa-calculator"></i>
+          <span>Mathematics</span>
+        </a>
+      </nav>
+      
+      <div class="header-actions">
+        <button class="btn-icon" id="themeToggle">
+          <i class="fas fa-moon"></i>
+        </button>
+      </div>
+    </div>
+    
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Dashboard Tab -->
+    <div id="dashboard" class="tab-content active">
+      <!-- Your existing dashboard content remains the same -->
+      <section class="welcome-section">
+        <div class="welcome-card">
+          <div class="welcome-content">
+            <h1>Welcome to GikoCBT</h1>
+            <p>Ready to create your next test? Start a new session or continue where you left off.</p>
+            <div class="welcome-actions">
+              <button class="btn-primary btn-lg" id="start-btn">
+                <i class="fas fa-play-circle"></i>
+                Start New Test
+              </button>
+              <button class="btn-secondary" id="quick-resume">
+                <i class="fas fa-redo"></i>
+                Quick Resume
+              </button>
+            </div>
+          </div>
+          <div class="welcome-stats">
+            <div class="stat-card">
+              <i class="fas fa-clock"></i>
+              <div class="stat-info">
+                <span class="stat-number" id="totalTests">0</span>
+                <span class="stat-label">Total Tests</span>
+              </div>
+            </div>
+            <div class="stat-card">
+              <i class="fas fa-check-circle"></i>
+              <div class="stat-info">
+                <span class="stat-number" id="completedTests">0</span>
+                <span class="stat-label">Completed</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Recent Tests Section -->
+      <section class="recent-tests-section">
+        <div class="section-header">
+          <h2>Recent Tests</h2>
+        </div>
+        
+        <div class="recent-tests-grid" id="recentTestsGrid">
+          <!-- Recent tests will be dynamically loaded here -->
+        </div>
+        
+        <div class="empty-state" id="no-recent">
+          <i class="fas fa-clipboard-list"></i>
+          <h3>No tests yet</h3>
+          <p>Create your first test to get started</p>
+          <button class="btn-primary" id="create-first-test">
+            Create First Test
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Physics Tab -->
+    <div id="physics" class="tab-content subject-tab">
+      <div class="test-header">
+        <div class="test-info">
+          <h2 id="currentTestName">Test Name</h2>
+        </div>
+      </div>
+
+      <div class="section-nav">
+        <button class="section-nav-btn active" data-section="section1">Section 1</button>
+        <button class="section-nav-btn" data-section="section2">Section 2</button>
+      </div>
+      
+      <div class="questions-container">
+        <div id="physics-section1" class="section-content active"></div>
+        <div id="physics-section2" class="section-content"></div>
+      </div>
+    </div>
+    
+    <!-- Chemistry Tab -->
+    <div id="chemistry" class="tab-content subject-tab">
+      <div class="test-header">
+        <div class="test-info">
+          <h2>Test Name</h2>
+        </div>
+      </div>
+
+      <div class="section-nav">
+        <button class="section-nav-btn active" data-section="section1">Section 1</button>
+        <button class="section-nav-btn" data-section="section2">Section 2</button>
+      </div>
+      
+      <div class="questions-container">
+        <div id="chemistry-section1" class="section-content active"></div>
+        <div id="chemistry-section2" class="section-content"></div>
+      </div>
+    </div>
+    
+    <!-- Mathematics Tab -->
+    <div id="mathematics" class="tab-content subject-tab">
+      <div class="test-header">
+        <div class="test-info">
+          <h2>Test Name</h2>
+        </div>
+      </div>
+
+      <div class="section-nav">
+        <button class="section-nav-btn active" data-section="section1">Section 1</button>
+        <button class="section-nav-btn" data-section="section2">Section 2</button>
+      </div>
+      
+      <div class="questions-container">
+        <div id="mathematics-section1" class="section-content active"></div>
+        <div id="mathematics-section2" class="section-content"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Fixed Test Footer (Always visible during tests) -->
+  <footer class="test-footer" id="testFooter">
+    <div class="footer-content">
+      <div class="test-progress-info">
+        <span class="test-progress" id="testProgress">0% Complete</span>
+      </div>
+      
+      <div class="test-controls">
+        <div class="timer-display" id="timer">
+          <i class="fas fa-clock"></i>
+          <span>00:00:00</span>
+        </div>
+        
+        <button class="btn-danger" id="end-test-btn">
+          <i class="fas fa-stop"></i>
+          End Test
+        </button>
+      </div>
+    </div>
+    
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+  </footer>
+
+  <!-- Confirm Modal -->
+  <div id="confirmModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Create New Test</h2>
+        <button class="modal-close" id="modalClose">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="input-group">
+          <label for="test-name">
+            <i class="fas fa-pen"></i>
+            Test Name
+          </label>
+          <input type="text" id="test-name" placeholder="Enter test name" required>
+        </div>
+
+        <div class="settings-grid">
+          <div class="setting-group">
+            <label>Section 1 Questions</label>
+            <div class="number-controls">
+              <button class="btn-control decrease" data-target="section1">
+                <i class="fas fa-minus"></i>
+              </button>
+              <input type="number" id="section1" value="20" min="1" max="1000">
+              <button class="btn-control increase" data-target="section1">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <label>Section 2 Questions</label>
+            <div class="number-controls">
+              <button class="btn-control decrease" data-target="section2">
+                <i class="fas fa-minus"></i>
+              </button>
+              <input type="number" id="section2" value="10" min="0" max="1000">
+              <button class="btn-control increase" data-target="section2">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" id="cancel-btn">Cancel</button>
+        <button class="btn-primary" id="ok-btn">
+          <i class="fas fa-play"></i>
+          Start Test
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- End Test Modal -->
+  <div id="endModal" class="modal hidden">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>End Test?</h2>
+        <button class="modal-close" id="endModalClose">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to end this test? Your progress will be saved.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="endCancel">Cancel</button>
+        <button class="btn-primary" id="endOk">End Test</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
