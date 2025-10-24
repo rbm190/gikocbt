@@ -133,6 +133,7 @@
       return `${h}:${m}:${s}`;
     }
 
+    // Update the showModal function in all-recent.html
     function showModal(test){
       currentTest = test;
       modalTestName.textContent = test.name || 'Unnamed Test';
@@ -150,11 +151,17 @@
           const key = `${sub}${sec}Answers`;
           const questions = test[key] || [];
           
+          // Create question display with proper answer formatting
+          const questionsHTML = questions.map((answer, i) => {
+            const displayAnswer = answer && answer.trim() !== '' ? answer : '-';
+            return `<div class="question-modal">Q${i+1}: ${displayAnswer}</div>`;
+          }).join('');
+          
           sectionsHTML += `
             <div class="section-modal">
               <div class="section-title">${sec}</div>
               <div class="questions-modal">
-                ${questions.map((q, i) => `<div class="question-modal">Q${i+1}: ${q || '-'}</div>`).join('')}
+                ${questionsHTML}
               </div>
             </div>
           `;
@@ -179,6 +186,7 @@
       }
     });
 
+    // Update the PDF export function in all-recent.html
     exportBtn.addEventListener('click', () => {
       if(!currentTest) return;
 
@@ -226,7 +234,7 @@
           const colGap = 3;
           const boxWidth = 25;
 
-          questions.forEach((q, i) => {
+          questions.forEach((answer, i) => {
             if(x + boxWidth > startX + maxWidth){ 
               x = startX + 10; 
               y += boxHeight + rowGap; 
@@ -236,10 +244,12 @@
               y = margin + 5; 
             }
 
+            const displayAnswer = answer && answer.trim() !== '' ? answer : '-';
+            
             doc.setDrawColor(180);
             doc.rect(x, y - 6, boxWidth, boxHeight);
-            doc.setFontSize(10);
-            doc.text(`Q${i+1}: ${q || '-'}`, x + 2, y - 1);
+            doc.setFontSize(8); // Smaller font to fit content
+            doc.text(`Q${i+1}: ${displayAnswer}`, x + 1, y - 1, { maxWidth: boxWidth - 2 });
             x += boxWidth + colGap;
           });
 
